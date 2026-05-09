@@ -1,65 +1,143 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { ShowSearch } from "@/components/ShowSearch";
+import { ShowCard } from "@/components/ShowCard";
+import { Spinner } from "@/components/ui/Spinner";
+import { useShow } from "@/context/ShowContext";
+import type { ShowSearchResult, ShowInfo } from "@/lib/types";
+
+export default function HomePage() {
+  const [results, setResults] = useState<ShowSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { setSelectedShow } = useShow();
+  const router = useRouter();
+
+  const handleResults = useCallback(
+    (shows: ShowSearchResult[]) => {
+      if (shows.length === 0) return;
+      if (shows.length === 1) {
+        handleSelectShow(shows[0]);
+        return;
+      }
+      setResults(shows);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const handleSelectShow = useCallback(
+    async (show: ShowSearchResult) => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/search-show", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: show.title }),
+        });
+        const data = await res.json();
+
+        if (data.success && data.data.exactMatch) {
+          setSelectedShow(data.data.exactMatch as ShowInfo);
+        } else {
+          setSelectedShow({
+            ...show, originalTitle: undefined, directors: [], actors: [],
+            summary: "", genres: [], episodeCount: undefined,
+            statusDetail: show.status === "ended" ? "已完结" : "连载中",
+          });
+        }
+        router.push("/confirm");
+      } catch {
+        router.push("/confirm");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setSelectedShow, router]
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] px-4 py-16 sm:py-24">
+      {/* Hero */}
+      <div className="text-center max-w-3xl mx-auto mb-14">
+        {/* Animated dimensional rings */}
+        <div className="mb-10 relative inline-flex items-center justify-center">
+          <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border border-purple-500/10 animate-spin-slow absolute" />
+          <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full border border-blue-500/8 animate-spin-slow absolute" style={{ animationDirection: "reverse", animationDuration: "25s" }} />
+          <div className="w-52 h-52 sm:w-72 sm:h-72 rounded-full border border-purple-500/5 animate-spin-slow absolute" style={{ animationDuration: "30s" }} />
+
+          {/* Portal center */}
+          <div className="relative z-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-3xl rounded-full animate-pulse-glow-purple" />
+            <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight shimmer-text">
+              Parathem
+            </h1>
+          </div>
+        </div>
+
+        {/* Mirror reflection effect */}
+        <div className="relative mb-3">
+          <p className="text-lg sm:text-xl text-purple-200/40 font-medium animate-float-dimension">
+            平行世界的他们
+          </p>
+          <p className="absolute top-full left-1/2 -translate-x-1/2 text-sm text-purple-200/10 mt-0.5 scale-y-[-1] select-none">
+            平行世界的他们
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <p className="text-sm text-white/15">The Parallel Them</p>
+
+        {/* Rift divider */}
+        <div className="flex items-center gap-3 my-10">
+          <hr className="portal-divider flex-1" />
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-purple-400/30 flex-shrink-0">
+            <circle cx="16" cy="8" r="2.5" fill="currentColor" />
+            <path d="M16 10.5 L16 22" stroke="currentColor" strokeWidth="0.8" className="animate-timeline-split" />
+            <path d="M16 18 L10 26" stroke="currentColor" strokeWidth="0.8" className="animate-timeline-split" />
+            <path d="M16 18 L22 26" stroke="currentColor" strokeWidth="0.8" className="animate-timeline-split" />
+            <circle cx="10" cy="26" r="1.2" fill="currentColor" opacity="0.5" />
+            <circle cx="22" cy="26" r="1.2" fill="currentColor" opacity="0.5" />
+          </svg>
+          <hr className="portal-divider flex-1" />
         </div>
-      </main>
+
+        <p className="text-white/30 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+          输入一部剧，穿越时间线，在平行宇宙中寻找另一种可能
+        </p>
+      </div>
+
+      {/* Search */}
+      <div className="w-full max-w-2xl mx-auto">
+        <ShowSearch onResults={handleResults} disabled={loading} />
+      </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="mt-12">
+          <Spinner size="lg" label="正在穿越时间线..." />
+        </div>
+      )}
+
+      {/* Multiple results */}
+      {!loading && results.length > 1 && (
+        <div className="w-full max-w-2xl mx-auto mt-10 space-y-4">
+          <p className="text-white/30 text-sm text-center">
+            在 {results.length} 条时间线中发现了匹配...
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {results.map((show) => (
+              <ShowCard key={show.doubanId || show.title} show={show} onSelect={handleSelectShow} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty hint */}
+      {!loading && results.length === 0 && (
+        <p className="mt-10 text-white/10 text-xs text-center max-w-xs">
+          搜索任意电视剧或网络剧集，打开平行世界的大门
+        </p>
+      )}
     </div>
   );
 }
