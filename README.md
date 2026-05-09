@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Parathem — 平行世界的他们
 
-## Getting Started
+AI 驱动的影视剧结局改写/预测工具。输入一部剧集名称，AI 为你生成平行世界的另一种结局。
 
-First, run the development server:
+## 功能
+
+- **搜索剧集**：输入剧名，DeepSeek AI 自动搜索并返回完整信息
+- **已完结剧集**：自定义结局描述 → AI 生成写实风格画面
+- **连载中剧集**：AI 分析 → Top 5 结局走向预测 → 5 张图片
+- **重新生成**：同一描述生成不同画面变体
+- **历史记录**：自动保存到 localStorage
+
+## 技术栈
+
+- Next.js 16 + TypeScript + Tailwind CSS
+- DeepSeek v4-pro + GPT Image 2
+- packyapi 中转站
+
+## 本地运行
 
 ```bash
+npm install
+cp .env.example .env.local
+# 编辑 .env.local 填入 API Key
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 部署 Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx vercel --prod
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+在 Vercel Dashboard 设置环境变量 `DEEPSEEK_API_KEY` 和 `OPENAI_API_KEY`。
